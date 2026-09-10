@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weeks — Pregnancy Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream: #F7F4EE;
+    --surface: #FFFFFF;
+    --ink: #2A2620;
+    --ink-soft: #6b6459;
+    --line: #E7E1D6;
+    --rose: #E9C7C9;
+    --rose-ink: #7A3E42;
+    --rose-dot: #B8636A;
+    --sage: #CBD8C4;
+    --sage-ink: #3E5233;
+    --sage-dot: #6F8F5D;
+    --plum: #5B4457;
+    --plum-light: #7C5F79;
+    --today-ring: #2A2620;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin: 0;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app{
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+  }
+
+  header.top{
+    margin-bottom: 22px;
+  }
+
+  header.top .kicker{
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    margin: 0 0 2px;
+  }
+
+  header.top h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 30px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* LMP input card */
+  .lmp-card{
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .lmp-card label{
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .lmp-card input[type="date"]{
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--cream);
+    color: var(--ink);
+  }
+
+  .lmp-card input[type="date"]:focus{
+    outline: 2px solid var(--plum);
+    outline-offset: 1px;
+  }
+
+  /* Summary hero */
+  .hero{
+    margin-top: 18px;
+    background: linear-gradient(135deg, var(--plum), var(--plum-light));
+    border-radius: 18px;
+    padding: 26px 24px;
+    color: #F6F1F5;
+    display: none;
+  }
+  .hero.show{ display: block; }
+
+  .hero .week-number{
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    line-height: 1;
+    font-weight: 600;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .hero .week-number span.unit{
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #E7D9E6;
+  }
+
+  .hero .meta-row{
+    display: flex;
+    gap: 22px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .hero .meta-item .label{
+    font-size: 12px;
+    color: #D7C4D5;
+    margin-bottom: 3px;
+  }
+  .hero .meta-item .value{
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .empty-note{
+    margin-top: 18px;
+    color: var(--ink-soft);
+    font-size: 14px;
+    padding: 4px 2px;
+  }
+
+  /* Legend */
+  .legend{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .legend .swatch{
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .legend .dot{
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  /* Calendar */
+  .cal-nav{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+
+  .cal-nav .month-label{
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  .cal-nav button{
+    border: 1px solid var(--line);
+    background: var(--surface);
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .cal-nav button:hover{ background: var(--cream); }
+  .cal-nav button:focus-visible{ outline: 2px solid var(--plum); outline-offset: 2px; }
+
+  .weekday-row{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .weekday-row div{
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  .grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .day{
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 6px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .day.blank{
+    background: transparent;
+    border: none;
+  }
+
+  .day.week-odd{
+    background: var(--rose);
+    border-color: var(--rose);
+    color: var(--rose-ink);
+  }
+  .day.week-even{
+    background: var(--sage);
+    border-color: var(--sage);
+    color: var(--sage-ink);
+  }
+
+  .day .datenum{
+    font-weight: 600;
+  }
+
+  .day .weekbadge{
+    position: absolute;
+    top: 3px;
+    right: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.55);
+  }
+
+  .day.week-odd .weekbadge{ color: var(--rose-dot); }
+  .day.week-even .weekbadge{ color: var(--sage-dot); }
+
+  .day.is-today{
+    box-shadow: inset 0 0 0 2px var(--today-ring);
+  }
+
+  .day.is-lmp::after{
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    right: 6px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ink);
+  }
+
+  footer.note{
+    margin-top: 26px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 420px){
+    .hero .week-number{ font-size: 50px; }
+    .day{ font-size: 11px; padding: 4px; }
+    .day .weekbadge{ font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <header class="top">
+    <p class="kicker">Pregnancy tracker</p>
+    <h1>Weeks</h1>
+  </header>
+
+  <div class="lmp-card">
+    <div>
+      <label for="lmpInput">Last menstrual period (LMP)</label>
+      <input type="date" id="lmpInput">
+    </div>
+  </div>
+
+  <div class="hero" id="hero">
+    <div class="week-number">
+      <span id="heroWeek">—</span><span class="unit" id="heroWeekUnit">weeks</span>
+    </div>
+    <div class="meta-row">
+      <div class="meta-item">
+        <div class="label">Trimester</div>
+        <div class="value" id="heroTrimester">—</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Due date</div>
+        <div class="value" id="heroDue">—</div>
+      </div>
+      <div class="meta-item">
+        <div class="label">Days to go</div>
+        <div class="value" id="heroDaysLeft">—</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="empty-note" id="emptyNote">Enter your LMP date above to see your calendar highlighted by pregnancy week.</p>
+
+  <div class="legend">
+    <span class="swatch"><span class="dot" style="background:var(--rose)"></span>Odd weeks</span>
+    <span class="swatch"><span class="dot" style="background:var(--sage)"></span>Even weeks</span>
+    <span class="swatch"><span class="dot" style="background:var(--ink); border-radius:50%; width:6px; height:6px;"></span>LMP date</span>
+  </div>
+
+  <div class="cal-nav">
+    <button id="prevMonth" aria-label="Previous month">‹</button>
+    <div class="month-label" id="monthLabel">—</div>
+    <button id="nextMonth" aria-label="Next month">›</button>
+  </div>
+
+  <div class="weekday-row">
+    <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+  </div>
+
+  <div class="grid" id="calGrid"></div>
+
+  <footer class="note">
+    Pregnancy weeks are counted from the first day of your LMP. Week 1 is the 7 days starting on that date. Due date is estimated as LMP + 280 days (40 weeks). This is a planning tool, not medical advice — always confirm dates with your care provider.
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const MS_DAY = 86400000;
+  const lmpInput = document.getElementById('lmpInput');
+  const hero = document.getElementById('hero');
+  const emptyNote = document.getElementById('emptyNote');
+  const heroWeek = document.getElementById('heroWeek');
+  const heroWeekUnit = document.getElementById('heroWeekUnit');
+  const heroTrimester = document.getElementById('heroTrimester');
+  const heroDue = document.getElementById('heroDue');
+  const heroDaysLeft = document.getElementById('heroDaysLeft');
+  const monthLabel = document.getElementById('monthLabel');
+  const calGrid = document.getElementById('calGrid');
+  const prevBtn = document.getElementById('prevMonth');
+  const nextBtn = document.getElementById('nextMonth');
+
+  let lmpDate = null; // Date object, local midnight
+  let viewYear, viewMonth; // month is 0-indexed
+
+  const today = stripTime(new Date());
+
+  function stripTime(d){
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function parseDateInput(value){
+    // value is "YYYY-MM-DD"
+    const [y, m, d] = value.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function fmtDate(d){
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function weekForDate(d){
+    // returns pregnancy week (1-indexed), or null if before LMP
+    if (!lmpDate) return null;
+    const diffDays = Math.floor((stripTime(d) - lmpDate) / MS_DAY);
+    if (diffDays < 0) return null;
+    return Math.floor(diffDays / 7) + 1;
+  }
+
+  function trimesterForWeek(w){
+    if (w <= 13) return 'First trimester';
+    if (w <= 27) return 'Second trimester';
+    return 'Third trimester';
+  }
+
+  function updateHero(){
+    if (!lmpDate){
+      hero.classList.remove('show');
+      emptyNote.style.display = 'block';
+      return;
+    }
+    emptyNote.style.display = 'none';
+    hero.classList.add('show');
+
+    const w = weekForDate(today);
+    if (w === null){
+      heroWeek.textContent = '0';
+      heroWeekUnit.textContent = 'weeks (starts soon)';
+      heroTrimester.textContent = '—';
+    } else {
+      heroWeek.textContent = w;
+      heroWeekUnit.textContent = w === 1 ? 'week' : 'weeks';
+      heroTrimester.textContent = trimesterForWeek(w);
+    }
+
+    const dueDate = new Date(lmpDate.getTime() + 280 * MS_DAY);
+    heroDue.textContent = fmtDate(dueDate);
+
+    const daysLeft = Math.ceil((dueDate - today) / MS_DAY);
+    heroDaysLeft.textContent = daysLeft > 0 ? daysLeft + ' days' : 'Due date passed';
+  }
+
+  function renderCalendar(){
+    monthLabel.textContent = new Date(viewYear, viewMonth, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    calGrid.innerHTML = '';
+
+    const firstOfMonth = new Date(viewYear, viewMonth, 1);
+    const startWeekday = firstOfMonth.getDay(); // 0 = Sunday
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    // leading blanks
+    for (let i = 0; i < startWeekday; i++){
+      const blank = document.createElement('div');
+      blank.className = 'day blank';
+      calGrid.appendChild(blank);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++){
+      const cellDate = new Date(viewYear, viewMonth, day);
+      const cell = document.createElement('div');
+      cell.className = 'day';
+
+      const w = weekForDate(cellDate);
+      if (w !== null){
+        cell.classList.add(w % 2 === 1 ? 'week-odd' : 'week-even');
+      }
+
+      if (stripTime(cellDate).getTime() === today.getTime()){
+        cell.classList.add('is-today');
+      }
+      if (lmpDate && stripTime(cellDate).getTime() === lmpDate.getTime()){
+        cell.classList.add('is-lmp');
+      }
+
+      const num = document.createElement('div');
+      num.className = 'datenum';
+      num.textContent = day;
+      cell.appendChild(num);
+
+      if (w !== null){
+        const badge = document.createElement('div');
+        badge.className = 'weekbadge';
+        badge.textContent = 'w' + w;
+        cell.appendChild(badge);
+      }
+
+      calGrid.appendChild(cell);
+    }
+  }
+
+  lmpInput.addEventListener('change', function(){
+    if (!this.value){
+      lmpDate = null;
+    } else {
+      lmpDate = parseDateInput(this.value);
+      viewYear = lmpDate.getFullYear();
+      viewMonth = lmpDate.getMonth();
+    }
+    updateHero();
+    renderCalendar();
+  });
+
+  prevBtn.addEventListener('click', function(){
+    viewMonth -= 1;
+    if (viewMonth < 0){ viewMonth = 11; viewYear -= 1; }
+    renderCalendar();
+  });
+
+  nextBtn.addEventListener('click', function(){
+    viewMonth += 1;
+    if (viewMonth > 11){ viewMonth = 0; viewYear += 1; }
+    renderCalendar();
+  });
+
+  // init to current month, no LMP set yet
+  viewYear = today.getFullYear();
+  viewMonth = today.getMonth();
+  updateHero();
+  renderCalendar();
+})();
+</script>
+
+</body>
+</html>
